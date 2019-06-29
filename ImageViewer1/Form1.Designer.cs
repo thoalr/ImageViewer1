@@ -81,7 +81,7 @@
             this.zoomToolStripMenuItem,
             this.gIFPropertyToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(160, 130);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(211, 158);
             // 
             // openToolStripMenuItem
             // 
@@ -104,7 +104,7 @@
             this.ascendingToolStripMenuItem,
             this.descendingToolStripMenuItem});
             this.sortByToolStripMenuItem.Name = "sortByToolStripMenuItem";
-            this.sortByToolStripMenuItem.Size = new System.Drawing.Size(159, 24);
+            this.sortByToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
             this.sortByToolStripMenuItem.Text = "Sort By";
             // 
             // nameToolStripMenuItem
@@ -112,14 +112,16 @@
             this.nameToolStripMenuItem.Checked = true;
             this.nameToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.nameToolStripMenuItem.Name = "nameToolStripMenuItem";
-            this.nameToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
+            this.nameToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.nameToolStripMenuItem.Text = "Name";
+            this.nameToolStripMenuItem.Click += new System.EventHandler(this.NameToolStripMenuItem_Click);
             // 
             // dateToolStripMenuItem
             // 
             this.dateToolStripMenuItem.Name = "dateToolStripMenuItem";
-            this.dateToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
+            this.dateToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.dateToolStripMenuItem.Text = "Date";
+            this.dateToolStripMenuItem.Click += new System.EventHandler(this.DateToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
@@ -131,14 +133,16 @@
             this.ascendingToolStripMenuItem.Checked = true;
             this.ascendingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ascendingToolStripMenuItem.Name = "ascendingToolStripMenuItem";
-            this.ascendingToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
+            this.ascendingToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.ascendingToolStripMenuItem.Text = "Ascending";
+            this.ascendingToolStripMenuItem.Click += new System.EventHandler(this.AscendingToolStripMenuItem_Click);
             // 
             // descendingToolStripMenuItem
             // 
             this.descendingToolStripMenuItem.Name = "descendingToolStripMenuItem";
-            this.descendingToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
+            this.descendingToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.descendingToolStripMenuItem.Text = "Descending";
+            this.descendingToolStripMenuItem.Click += new System.EventHandler(this.DescendingToolStripMenuItem_Click);
             // 
             // zoomToolStripMenuItem
             // 

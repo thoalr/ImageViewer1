@@ -37,10 +37,10 @@ namespace ImageViewer1
 
         }
 
-        string imagefilepath;
-        string currentDir = @"C:\";
+        FileInfo imagefilepath;
+        DirectoryInfo currentDir = new DirectoryInfo(@"C:\");
         int currentImageIndex = 0;
-        string[] filelist;
+        FileInfo[] filelist;
 
         //Dictionary<string, Bitmap> imageCache;
         //MemoryCache imageCache = MemoryCache.Default;
@@ -73,7 +73,7 @@ namespace ImageViewer1
 
         public Form1(string arg)
         {
-            imagefilepath = arg;
+            imagefilepath = new FileInfo(arg);
 
             InitializeComponent();
             Form1_Construct();
@@ -90,44 +90,73 @@ namespace ImageViewer1
         private void Form1_Load(object sender, EventArgs e)
         {
 
-            while(imagefilepath == null)
+            while (imagefilepath == null)
             {
                 using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
                 {
-                    openFileDialog1.InitialDirectory = currentDir;
+                    openFileDialog1.InitialDirectory = currentDir.FullName;
                     openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
                     openFileDialog1.FilterIndex = 1;
                     openFileDialog1.RestoreDirectory = true;
 
                     if (openFileDialog1.ShowDialog() == DialogResult.OK)
                     {
-                        imagefilepath = openFileDialog1.FileName;
+                        imagefilepath = new FileInfo( openFileDialog1.FileName);
                     }
                 }
             }
 
-            Image = (Bitmap)Bitmap.FromFile(imagefilepath);
+            Image = (Bitmap)Bitmap.FromFile(imagefilepath.FullName);
 
             this.WindowState = FormWindowState.Maximized;
 
 
             //pictureBox1.Image = screenBuffer;
 
-            currentDir = Path.GetDirectoryName(imagefilepath);
-            fileSystemWatcher1.Path = currentDir;
+            currentDir = new DirectoryInfo( imagefilepath.DirectoryName);
+            fileSystemWatcher1.Path = currentDir.FullName;
             fileSystemWatcher1.EnableRaisingEvents = true;
             fileSystemWatcher1.NotifyFilter = NotifyFilters.LastAccess
                        | NotifyFilters.LastWrite
                        | NotifyFilters.FileName
                        | NotifyFilters.DirectoryName;
 
-            filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
-                .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
-
-            currentImageIndex = Array.IndexOf(filelist, imagefilepath);
+            newFileList();
 
             this.BringToFront();
 
+        }
+
+        void newFileList()
+        {
+            var tmp = currentDir.GetFiles("*.*", SearchOption.TopDirectoryOnly)
+                .Where(s => extensions.Contains(s.Extension));
+
+            if (nameToolStripMenuItem.Checked)
+            {
+                if (ascendingToolStripMenuItem.Checked)
+                    tmp = tmp.OrderBy(p => p.Name);
+                else
+                    tmp = tmp.OrderByDescending(p => p.Name);
+            }
+            else
+            {
+                if (ascendingToolStripMenuItem.Checked)
+                    tmp = tmp.OrderBy(p => p.CreationTimeUtc);
+                else
+                    tmp = tmp.OrderByDescending(p => p.CreationTimeUtc);
+            }
+
+            filelist = tmp.ToArray(); 
+
+            for(int i = 0; i < filelist.Length; i++)
+            {
+                if (filelist[i].FullName == imagefilepath.FullName)
+                {
+                    currentImageIndex = i;
+                    break;
+                }
+            }
         }
 
         private void CenterImage()
@@ -230,7 +259,7 @@ namespace ImageViewer1
             {
                 currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
 
-                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
                 zoomType = ZoomType.Center;
 
                 firstDraw = true;
@@ -241,7 +270,7 @@ namespace ImageViewer1
             {
                 currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
 
-                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
                 zoomType = ZoomType.Center;
 
                 firstDraw = true;
@@ -321,7 +350,7 @@ namespace ImageViewer1
             {
                 currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
 
-                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
                 zoomType = ZoomType.Center;
 
                 firstDraw = true;
@@ -333,7 +362,7 @@ namespace ImageViewer1
             {
                 currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
 
-                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
                 zoomType = ZoomType.Center;
 
                 firstDraw = true;
@@ -349,7 +378,7 @@ namespace ImageViewer1
             {
                 currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
 
-                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
                 zoomType = ZoomType.Center;
 
                 firstDraw = true;
@@ -361,7 +390,7 @@ namespace ImageViewer1
             {
                 currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
 
-                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
                 zoomType = ZoomType.Center;
 
                 firstDraw = true;
@@ -393,27 +422,19 @@ namespace ImageViewer1
         private void FileSystemWatcher1_Changed(object sender, FileSystemEventArgs e)
         {
             // Reload when file changes
-            if(e.ChangeType == WatcherChangeTypes.Created && extensions.Contains( Path.GetExtension( e.FullPath)) )
+            if (e.ChangeType == WatcherChangeTypes.Created && extensions.Contains(Path.GetExtension(e.FullPath)))
             {
-                filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
-                .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
-
-                currentImageIndex = Array.IndexOf(filelist, imagefilepath);
+                newFileList();
             }
             if (e.ChangeType == WatcherChangeTypes.Renamed && extensions.Contains(Path.GetExtension(e.FullPath)))
             {
-                filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
-                .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
-
-                currentImageIndex = Array.IndexOf(filelist, imagefilepath);
+                newFileList();
                 if (currentImageIndex < 0) currentImageIndex = 0;
             }
             if (e.ChangeType == WatcherChangeTypes.Deleted && extensions.Contains(Path.GetExtension(e.FullPath)))
             {
-                filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
-                .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
-
-                currentImageIndex = Array.IndexOf(filelist, imagefilepath);
+                newFileList();
+                if (currentImageIndex < 0) currentImageIndex = 0;
             }
 
         }
@@ -423,28 +444,26 @@ namespace ImageViewer1
             using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
             {
 
-                openFileDialog1.InitialDirectory = currentDir;
+                openFileDialog1.InitialDirectory = currentDir.FullName;
                 openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
                 openFileDialog1.FilterIndex = 1;
                 openFileDialog1.RestoreDirectory = true;
 
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    imagefilepath = openFileDialog1.FileName;
+                    imagefilepath = new FileInfo(openFileDialog1.FileName);
 
-                    currentDir = Path.GetDirectoryName(imagefilepath);
+                    currentDir = new DirectoryInfo(imagefilepath.DirectoryName);
 
-                    filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
-                        .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
+                    newFileList();
 
-                    currentImageIndex = Array.IndexOf(filelist, imagefilepath);
-
-                    Image = (Bitmap)Bitmap.FromFile(imagefilepath);
+                    Image = (Bitmap)Bitmap.FromFile(imagefilepath.FullName);
                     zoomType = ZoomType.Center;
 
                     firstDraw = true;
 
                     pictureBox1.Invalidate();
+                    fileSystemWatcher1.Path = currentDir.FullName;
                 }
             }
         }
@@ -487,6 +506,64 @@ namespace ImageViewer1
                 this.Bounds = Screen.PrimaryScreen.Bounds;
                 this.Activate();
             }
+        }
+
+        private void NameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (nameToolStripMenuItem.Checked) return;
+            imagefilepath = new FileInfo(filelist[currentImageIndex].FullName);
+            newFileList();
+
+            nameToolStripMenuItem.Checked = true;
+            dateToolStripMenuItem.Checked = false;
+            //nameToolStripMenuItem.CheckState = CheckState.Checked;
+
+        }
+
+        private void DateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (dateToolStripMenuItem.Checked) return;
+            imagefilepath = new FileInfo(filelist[currentImageIndex].FullName);
+            newFileList();
+
+            nameToolStripMenuItem.Checked = false;
+            dateToolStripMenuItem.Checked = true;
+        }
+
+        private void AscendingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ascendingToolStripMenuItem.Checked) return;
+            imagefilepath = new FileInfo(filelist[currentImageIndex].FullName);
+            Array.Reverse(filelist);
+            for (int i = 0; i < filelist.Length; i++)
+            {
+                if (filelist[i].FullName == imagefilepath.FullName)
+                {
+                    currentImageIndex = i;
+                    break;
+                }
+            }
+
+            ascendingToolStripMenuItem.Checked = true;
+            descendingToolStripMenuItem.Checked = false;
+            //ascendingToolStripMenuItem.CheckState =
+        }
+
+        private void DescendingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (descendingToolStripMenuItem.Checked) return;
+            imagefilepath = new FileInfo(filelist[currentImageIndex].FullName);
+            Array.Reverse(filelist);
+            for (int i = 0; i < filelist.Length; i++)
+            {
+                if (filelist[i].FullName == imagefilepath.FullName)
+                {
+                    currentImageIndex = i;
+                    break;
+                }
+            }
+            descendingToolStripMenuItem.Checked = true;
+            ascendingToolStripMenuItem.Checked = false;
         }
     }
 }
