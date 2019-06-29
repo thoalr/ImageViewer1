@@ -46,8 +46,6 @@
             this.previousFrameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timeDelayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.putValueHereToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fileSystemWatcher1 = new System.IO.FileSystemWatcher();
             this.fullscreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -81,11 +79,9 @@
             this.toolStripSeparator1,
             this.sortByToolStripMenuItem,
             this.zoomToolStripMenuItem,
-            this.gIFPropertyToolStripMenuItem,
-            this.toolStripSeparator2,
-            this.deleteToolStripMenuItem});
+            this.gIFPropertyToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(160, 160);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(160, 130);
             // 
             // openToolStripMenuItem
             // 
@@ -195,17 +191,6 @@
             this.putValueHereToolStripMenuItem.Size = new System.Drawing.Size(189, 26);
             this.putValueHereToolStripMenuItem.Text = "Put Value Here";
             // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(156, 6);
-            // 
-            // deleteToolStripMenuItem
-            // 
-            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(159, 24);
-            this.deleteToolStripMenuItem.Text = "Delete (Del)";
-            // 
             // fileSystemWatcher1
             // 
             this.fileSystemWatcher1.NotifyFilter = System.IO.NotifyFilters.FileName;
@@ -241,7 +226,6 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gIFPropertyToolStripMenuItem;
@@ -250,7 +234,6 @@
         private System.Windows.Forms.ToolStripMenuItem previousFrameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem timeDelayToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem putValueHereToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem sortByToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem dateToolStripMenuItem;

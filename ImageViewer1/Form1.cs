@@ -37,7 +37,7 @@ namespace ImageViewer1
 
         }
 
-        string imagefilepath = @"C:\Users\thors\Documents\Frami\1.jpg";
+        string imagefilepath;
         string currentDir = @"C:\";
         int currentImageIndex = 0;
         string[] filelist;
@@ -89,6 +89,23 @@ namespace ImageViewer1
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
+            while(imagefilepath == null)
+            {
+                using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
+                {
+                    openFileDialog1.InitialDirectory = currentDir;
+                    openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
+                    openFileDialog1.FilterIndex = 1;
+                    openFileDialog1.RestoreDirectory = true;
+
+                    if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                    {
+                        imagefilepath = openFileDialog1.FileName;
+                    }
+                }
+            }
+
             Image = (Bitmap)Bitmap.FromFile(imagefilepath);
 
             this.WindowState = FormWindowState.Maximized;
@@ -108,6 +125,8 @@ namespace ImageViewer1
                 .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
 
             currentImageIndex = Array.IndexOf(filelist, imagefilepath);
+
+            this.BringToFront();
 
         }
 
@@ -396,14 +415,6 @@ namespace ImageViewer1
 
                 currentImageIndex = Array.IndexOf(filelist, imagefilepath);
             }
-
-        }
-
-        class FileSystemStruct
-        {
-            string path;
-            bool Chached;
-            Bitmap Bitmap;
 
         }
 
