@@ -97,6 +97,12 @@ namespace ImageViewer1
             //pictureBox1.Image = screenBuffer;
 
             currentDir = Path.GetDirectoryName(imagefilepath);
+            fileSystemWatcher1.Path = currentDir;
+            fileSystemWatcher1.EnableRaisingEvents = true;
+            fileSystemWatcher1.NotifyFilter = NotifyFilters.LastAccess
+                       | NotifyFilters.LastWrite
+                       | NotifyFilters.FileName
+                       | NotifyFilters.DirectoryName;
 
             filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
                 .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
@@ -368,6 +374,29 @@ namespace ImageViewer1
         private void FileSystemWatcher1_Changed(object sender, FileSystemEventArgs e)
         {
             // Reload when file changes
+            if(e.ChangeType == WatcherChangeTypes.Created && extensions.Contains( Path.GetExtension( e.FullPath)) )
+            {
+                filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
+                .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
+
+                currentImageIndex = Array.IndexOf(filelist, imagefilepath);
+            }
+            if (e.ChangeType == WatcherChangeTypes.Renamed && extensions.Contains(Path.GetExtension(e.FullPath)))
+            {
+                filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
+                .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
+
+                currentImageIndex = Array.IndexOf(filelist, imagefilepath);
+                if (currentImageIndex < 0) currentImageIndex = 0;
+            }
+            if (e.ChangeType == WatcherChangeTypes.Deleted && extensions.Contains(Path.GetExtension(e.FullPath)))
+            {
+                filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
+                .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
+
+                currentImageIndex = Array.IndexOf(filelist, imagefilepath);
+            }
+
         }
 
         class FileSystemStruct
@@ -431,6 +460,22 @@ namespace ImageViewer1
             zoomType = ZoomType.Center;
             this.firstDraw = true;
             pictureBox1.Invalidate();
+        }
+
+        private void FullscreenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (this.FormBorderStyle == FormBorderStyle.None)
+            {
+                this.FormBorderStyle = FormBorderStyle.FixedSingle;
+                this.WindowState = FormWindowState.Maximized;
+            }
+            else
+            {
+                this.WindowState = FormWindowState.Normal;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.Bounds = Screen.PrimaryScreen.Bounds;
+                this.Activate();
+            }
         }
     }
 }
