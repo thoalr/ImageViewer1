@@ -128,7 +128,7 @@ namespace ImageViewer1
                 }
                 else if ((int)(Zoom * Image.Size.Height / 100.0f) <= pictureBox1.Height)
                 {
-                    image_offset.Y = (int)(((Zoom * Image.Size.Height / 100.0f) - pictureBox1.Height) / 2);
+                    image_offset.Y = (int)((pictureBox1.Height - (Zoom * Image.Size.Height / 100.0f)) / 2);
                 }
             }
 
@@ -148,7 +148,7 @@ namespace ImageViewer1
 
         int PercentOfCalc(int value, double zoom)
         {
-            return (int)(value * zoom / (100 * 5)); // return 20% (1/5) of image width with current zoom level
+            return (int)(value * (zoom * .1) / 100); // return 20% (1/5) of image width with current zoom level
         }
 
 
@@ -182,7 +182,7 @@ namespace ImageViewer1
             if (e.KeyChar.Equals('+'))
             {
                 Zoom *= ZoomValue;
-                if (Zoom > 400) Zoom = 400;
+                if (Zoom > 500) Zoom = 500;
                 zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
                 //CenterImage();
             }
@@ -201,7 +201,7 @@ namespace ImageViewer1
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (keyData == Keys.Left)
+            if (keyData == Keys.Left || keyData == Keys.XButton1)
             {
                 currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
 
@@ -212,7 +212,7 @@ namespace ImageViewer1
 
                 pictureBox1.Invalidate();
             }
-            if (keyData == Keys.Right)
+            if (keyData == Keys.Right || keyData == Keys.XButton2)
             {
                 currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
 
@@ -234,8 +234,8 @@ namespace ImageViewer1
             float oldZoom = Zoom;
             int sign = Math.Sign(e.Delta);
             Zoom *= sign > 0 ? ZoomValue : 1 / ZoomValue;
-            if (Zoom > 400) Zoom = 400;
-            if (Zoom < 5) Zoom = 5;
+            if (Zoom > 500) Zoom = 500;
+            if (Zoom < 10) Zoom = 10;
             zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
 
             image_offset.X = (int)(image_offset.X * Zoom / oldZoom) + (int)(e.Location.X * (1 - Zoom / oldZoom));
@@ -292,7 +292,7 @@ namespace ImageViewer1
         }
         protected virtual void OnMouseHWheel(MouseEventArgs e)
         {
-            if (e.Delta >= 10)
+            if (e.Delta <= -10)
             {
                 currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
 
@@ -304,7 +304,7 @@ namespace ImageViewer1
                 pictureBox1.Invalidate();
             }
 
-            if (e.Delta <= -10)
+            if (e.Delta >= 10)
             {
                 currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
 
@@ -320,6 +320,32 @@ namespace ImageViewer1
 
         private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.XButton1)
+            {
+                currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
+
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                zoomType = ZoomType.Center;
+
+                firstDraw = true;
+
+                pictureBox1.Invalidate();
+                return;
+            }
+            if (e.Button == MouseButtons.XButton2)
+            {
+                currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
+
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                zoomType = ZoomType.Center;
+
+                firstDraw = true;
+
+                pictureBox1.Invalidate();
+                return;
+            }
+
+
             zoomType = ZoomType.Free;
             pictureBox1.Capture = true;
             mouseLastPos = e.Location;
@@ -332,7 +358,7 @@ namespace ImageViewer1
 
         private void PictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!pictureBox1.Capture) return;
+            if (!pictureBox1.Capture || !(e.Button == MouseButtons.Left || e.Button == MouseButtons.Middle)) return;
             image_offset = Point.Add(image_offset, Size.Subtract((Size)e.Location, (Size)mouseLastPos));
             mouseLastPos = e.Location;
             CenterImage();
@@ -358,8 +384,8 @@ namespace ImageViewer1
             {
 
                 openFileDialog1.InitialDirectory = currentDir;
-                openFileDialog1.Filter = "image files (.jpg | .jpeg | .png)|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
-                openFileDialog1.FilterIndex = 2;
+                openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
+                openFileDialog1.FilterIndex = 1;
                 openFileDialog1.RestoreDirectory = true;
 
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -381,6 +407,30 @@ namespace ImageViewer1
                     pictureBox1.Invalidate();
                 }
             }
+        }
+
+        private void PictureBox1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left) return;
+            if (this.FormBorderStyle == FormBorderStyle.None)
+            {
+                this.FormBorderStyle = FormBorderStyle.FixedSingle;
+                this.WindowState = FormWindowState.Maximized;
+            }
+            else
+            {
+                this.WindowState = FormWindowState.Normal;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.Bounds = Screen.PrimaryScreen.Bounds;
+                this.Activate();
+            }
+        }
+
+        private void ZoomToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            zoomType = ZoomType.Center;
+            this.firstDraw = true;
+            pictureBox1.Invalidate();
         }
     }
 }
