@@ -40,7 +40,6 @@
             this.ascendingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.descendingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.placeValueHereToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gIFPropertyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startStopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nextFrameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -143,17 +142,9 @@
             // 
             // zoomToolStripMenuItem
             // 
-            this.zoomToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.placeValueHereToolStripMenuItem});
             this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
             this.zoomToolStripMenuItem.Size = new System.Drawing.Size(159, 24);
             this.zoomToolStripMenuItem.Text = "Zoom";
-            // 
-            // placeValueHereToolStripMenuItem
-            // 
-            this.placeValueHereToolStripMenuItem.Name = "placeValueHereToolStripMenuItem";
-            this.placeValueHereToolStripMenuItem.Size = new System.Drawing.Size(235, 26);
-            this.placeValueHereToolStripMenuItem.Text = "Place value here (+/-)";
             // 
             // gIFPropertyToolStripMenuItem
             // 
@@ -241,7 +232,6 @@
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem placeValueHereToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gIFPropertyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem startStopToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nextFrameToolStripMenuItem;

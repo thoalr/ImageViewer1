@@ -16,6 +16,27 @@ namespace ImageViewer1
 {
     public partial class Form1 : Form
     {
+
+        abstract class Win32Messages
+        {
+            public const int WM_MOUSEHWHEEL = 0x020E;//discovered via Spy++ 
+        }
+        abstract class Utils
+        {
+            internal static Int32 HIWORD(IntPtr ptr)
+            {
+                Int32 val32 = ptr.ToInt32();
+                return ((val32 >> 16) & 0xFFFF);
+            }
+
+            internal static Int32 LOWORD(IntPtr ptr)
+            {
+                Int32 val32 = ptr.ToInt32();
+                return (val32 & 0xFFFF);
+            }
+
+        }
+
         string imagefilepath = @"C:\Users\thors\Documents\Frami\1.jpg";
         string currentDir = @"C:\";
         int currentImageIndex = 0;
@@ -141,6 +162,7 @@ namespace ImageViewer1
             {
                 firstDraw = false;
                 Zoom = 100.0f * pictureBox1.Height / Image.Height;
+                zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
                 CenterImage();
             }
             e.Graphics.DrawImage(Image, new Rectangle(image_offset, new Size((int)(Zoom * Image.Size.Width / 100.0f),
@@ -162,12 +184,14 @@ namespace ImageViewer1
             {
                 Zoom *= ZoomValue;
                 if (Zoom > 400) Zoom = 400;
+                zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
                 //CenterImage();
             }
             if (e.KeyChar == '-')
             {
                 Zoom /= ZoomValue;
                 if (Zoom < 10) Zoom = 10;
+                zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
                 //CenterImage();
             }
 
@@ -213,6 +237,7 @@ namespace ImageViewer1
             Zoom *= sign > 0 ? ZoomValue : 1 / ZoomValue;
             if (Zoom > 400) Zoom = 400;
             if (Zoom < 5) Zoom = 5;
+            zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
 
             image_offset.X = (int)(image_offset.X * Zoom / oldZoom) + (int)(e.Location.X * (1 - Zoom / oldZoom));
             image_offset.Y = (int)(image_offset.Y * Zoom / oldZoom) + (int)(e.Location.Y * (1 - Zoom / oldZoom));
@@ -220,6 +245,73 @@ namespace ImageViewer1
             CenterImage();
 
             pictureBox1.Invalidate();
+        }
+        protected override void WndProc(ref Message m)
+        {
+            try
+            {
+                base.WndProc(ref m);
+                if (m.HWnd != this.Handle)
+                {
+                    return;
+                }
+                switch (m.Msg)
+                {
+                    case Win32Messages.WM_MOUSEHWHEEL:
+                        FireMouseHWheel(m.WParam, m.LParam);
+                        m.Result = (IntPtr)1;
+                        break;
+                    default:
+                        break;
+
+                }
+            } catch { };
+        }
+
+        public event EventHandler<MouseEventArgs> MouseHWheel;
+        protected void FireMouseHWheel(IntPtr wParam, IntPtr lParam)
+        {
+            Int32 tilt = (Int16)Utils.HIWORD(wParam);
+            Int32 keys = Utils.LOWORD(wParam);
+            Int32 x = Utils.LOWORD(lParam);
+            Int32 y = Utils.HIWORD(lParam);
+
+            FireMouseHWheel(MouseButtons.None, 0, x, y, tilt);
+        }
+
+        protected void FireMouseHWheel(MouseButtons buttons, int clicks, int x, int y, int delta)
+        {
+            MouseEventArgs args = new MouseEventArgs(buttons,
+                                         clicks, x, y, delta);
+            OnMouseHWheel(args);
+            //let everybody else have a crack at it 
+            MouseHWheel?.Invoke(this, args);
+        }
+        protected virtual void OnMouseHWheel(MouseEventArgs e)
+        {
+            if ( e.Delta >= 10)
+            {
+                currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
+
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                zoomType = ZoomType.Center;
+
+                firstDraw = true;
+
+                pictureBox1.Invalidate();
+            }
+
+            if ( e.Delta <= -10)
+            {
+                currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
+
+                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
+                zoomType = ZoomType.Center;
+
+                firstDraw = true;
+
+                pictureBox1.Invalidate();
+            }
         }
 
         private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
