@@ -101,7 +101,6 @@ namespace ImageViewer1
             filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
                 .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
 
-
             currentImageIndex = Array.IndexOf(filelist, imagefilepath);
 
         }
@@ -149,7 +148,7 @@ namespace ImageViewer1
 
         int PercentOfCalc(int value, double zoom)
         {
-            return (int)(value * zoom / (100*5)); // return 20% (1/5) of image width with current zoom level
+            return (int)(value * zoom / (100 * 5)); // return 20% (1/5) of image width with current zoom level
         }
 
 
@@ -204,7 +203,7 @@ namespace ImageViewer1
         {
             if (keyData == Keys.Left)
             {
-                currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length-1;
+                currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
 
                 Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
                 zoomType = ZoomType.Center;
@@ -215,7 +214,7 @@ namespace ImageViewer1
             }
             if (keyData == Keys.Right)
             {
-                currentImageIndex = currentImageIndex < filelist.Length-1 ? currentImageIndex + 1 : 0;
+                currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
 
                 Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex]);
                 zoomType = ZoomType.Center;
@@ -246,6 +245,9 @@ namespace ImageViewer1
 
             pictureBox1.Invalidate();
         }
+
+        // Horizontal Scrolling from
+        // http://www.philosophicalgeek.com/2007/07/27/mouse-tilt-wheel-horizontal-scrolling-in-c/
         protected override void WndProc(ref Message m)
         {
             try
@@ -265,7 +267,8 @@ namespace ImageViewer1
                         break;
 
                 }
-            } catch { };
+            }
+            catch { };
         }
 
         public event EventHandler<MouseEventArgs> MouseHWheel;
@@ -289,7 +292,7 @@ namespace ImageViewer1
         }
         protected virtual void OnMouseHWheel(MouseEventArgs e)
         {
-            if ( e.Delta >= 10)
+            if (e.Delta >= 10)
             {
                 currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
 
@@ -301,7 +304,7 @@ namespace ImageViewer1
                 pictureBox1.Invalidate();
             }
 
-            if ( e.Delta <= -10)
+            if (e.Delta <= -10)
             {
                 currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
 
@@ -313,6 +316,7 @@ namespace ImageViewer1
                 pictureBox1.Invalidate();
             }
         }
+        // Horizontal scrolling END
 
         private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
@@ -337,7 +341,7 @@ namespace ImageViewer1
 
         private void FileSystemWatcher1_Changed(object sender, FileSystemEventArgs e)
         {
-
+            // Reload when file changes
         }
 
         class FileSystemStruct
@@ -346,6 +350,37 @@ namespace ImageViewer1
             bool Chached;
             Bitmap Bitmap;
 
+        }
+
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
+            {
+
+                openFileDialog1.InitialDirectory = currentDir;
+                openFileDialog1.Filter = "image files (.jpg | .jpeg | .png)|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
+                openFileDialog1.FilterIndex = 2;
+                openFileDialog1.RestoreDirectory = true;
+
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    imagefilepath = openFileDialog1.FileName;
+
+                    currentDir = Path.GetDirectoryName(imagefilepath);
+
+                    filelist = Directory.GetFiles(currentDir, "*.*", SearchOption.TopDirectoryOnly)
+                        .Where(s => extensions.Contains(Path.GetExtension(s))).ToArray();
+
+                    currentImageIndex = Array.IndexOf(filelist, imagefilepath);
+
+                    Image = (Bitmap)Bitmap.FromFile(imagefilepath);
+                    zoomType = ZoomType.Center;
+
+                    firstDraw = true;
+
+                    pictureBox1.Invalidate();
+                }
+            }
         }
     }
 }
