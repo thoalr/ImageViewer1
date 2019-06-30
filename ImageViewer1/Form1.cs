@@ -63,8 +63,10 @@ namespace ImageViewer1
             {
                 openNewFile();
             }
-
-            currentDir = new DirectoryInfo(imagefilepath.FullName);
+            if (Path.HasExtension(imagefilepath.FullName))
+                currentDir = imagefilepath.Directory;
+            else
+                currentDir = new DirectoryInfo(imagefilepath.FullName);
 
             // Populate filelist with all files in current directory whith allowed file extensions
             newFileList();
@@ -343,9 +345,10 @@ namespace ImageViewer1
 
                     pictureBox1.Invalidate();
                     updateFormText();
+
+                    setGIF();
                 }
             }
-            setGIF();
         }
 
         // Refresh filelist
