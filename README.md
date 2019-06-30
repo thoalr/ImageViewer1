@@ -1,9 +1,8 @@
 Image viewer written in C# with .Net
 
-
 Features:
 
-Has zoom and panning functionality.
+Has zoom and panning.
 
 Scroll through directory.
 
@@ -13,11 +12,4 @@ Open new file.
 
 Fullscreen.
 
-Watches for changes in current directory.
-
-
-Plans:
-
--GIFs
-
--Error checking and debugging specifically try and catch statements
+GIF support. Start/stop. Next/previous frame. Change speed.
