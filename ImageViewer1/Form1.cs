@@ -86,7 +86,7 @@ namespace ImageViewer1
 
         private void updateFormText()
         {
-            this.Text = "ImageViewer - " + imagefilepath.FullName + " - Zoom: " + Zoom;
+            this.Text = "ImageViewer - " + filelist[currentImageIndex].FullName + " - Zoom: " + Zoom;
         }
 
         void newFileList()
