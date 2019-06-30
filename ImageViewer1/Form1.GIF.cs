@@ -23,8 +23,7 @@ namespace ImageViewer1
         private int gifFrameCount = 1;
         private int currentFrame = 0;
         //private bool gifIsPlaying = false;
-        double interval;
-        double fps = 24;
+        int interval;
         //Stopwatch stopwatch;
         long pTicks;
         long cTick;
@@ -36,21 +35,26 @@ namespace ImageViewer1
                 isGIF = false;
                 timer1.Stop();
                 timer1.Enabled = false;
+                gIFPropertyToolStripMenuItem.Enabled = false;
                 return;
             }
-            currentFrame = 1;
+            if(firstDraw)
+            {
+                currentFrame = 1;
+                fdimension = new FrameDimension(Image.FrameDimensionsList[0]);
+                gifFrameCount = Image.GetFrameCount(fdimension);
+                Image.SelectActiveFrame(fdimension, currentFrame);
 
-            fdimension = new FrameDimension(Image.FrameDimensionsList[0]);
-            gifFrameCount = Image.GetFrameCount(fdimension);
-            Image.SelectActiveFrame(fdimension, currentFrame);
-            
+                PropertyItem item = Image.GetPropertyItem(0x5100);
+                interval = (item.Value[0] + item.Value[1] * 256);
+            }
+
             isGIF = true;
+            gIFPropertyToolStripMenuItem.Enabled = true;
 
-            PropertyItem item = Image.GetPropertyItem(0x5100);
-            interval = (item.Value[0] + item.Value[1] * 256) * 10;
             //interval = 100 / fps;
 
-            timer1.Interval = (int)interval;
+            timer1.Interval = interval;
             timer1.Start();
         }
 
@@ -61,7 +65,48 @@ namespace ImageViewer1
             pictureBox1.Invalidate();
         }
 
+        // Display next frame
+        private void NextFrameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentFrame = (currentFrame + 1) % gifFrameCount;
+            Image.SelectActiveFrame(fdimension, currentFrame);
+            pictureBox1.Invalidate();
+        }
 
+        // Display previous frame
+        private void PreviousFrameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentFrame = (currentFrame - 1 + gifFrameCount) % gifFrameCount;
+            Image.SelectActiveFrame(fdimension, currentFrame);
+            pictureBox1.Invalidate();
+        }
+
+        // Start or stop playing the GIF
+        private void StartStopToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            timer1.Enabled = timer1.Enabled ? false : true;
+        }
+
+        // Set the speed defined by the GIF file
+        private void PutValueHereToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PropertyItem item = Image.GetPropertyItem(0x5100);
+            interval = (item.Value[0] + item.Value[1] * 256);
+        }
+
+        // Increase GIF play speed by decreasing interval
+        private void IncreaseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            interval = Math.Max(interval - 10, 1);
+            timer1.Interval = (int)interval;
+        }
+
+        // Decrease GIF play speed by increasing interval
+        private void DecreaseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            interval = Math.Min(interval + 10, 100);
+            timer1.Interval = (int)interval;
+        }
 
     }
 }

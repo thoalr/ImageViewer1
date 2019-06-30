@@ -32,7 +32,7 @@ namespace ImageViewer1
         private Point image_offset = new Point(0, 0);
         Bitmap Image;
         float Zoom = 100;
-        int maxZoom = 1000;
+        int maxZoom = 2000;
         int minZoom = 5;
         float ZoomValue = 1.3f;
         bool firstDraw = true;
@@ -74,28 +74,10 @@ namespace ImageViewer1
 
             while (imagefilepath == null)
             {
-                using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
-                {
-                    openFileDialog1.InitialDirectory = currentDir.FullName;
-                    openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
-                    openFileDialog1.FilterIndex = 1;
-                    openFileDialog1.RestoreDirectory = true;
-
-                    if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                    {
-                        imagefilepath = new FileInfo( openFileDialog1.FileName);
-                    }
-                }
+                openNewFile();
             }
 
-            Image = (Bitmap)Bitmap.FromFile(imagefilepath.FullName);
-
-            this.WindowState = FormWindowState.Maximized;
-
-
-            //pictureBox1.Image = screenBuffer;
-
-            currentDir = new DirectoryInfo( imagefilepath.DirectoryName);
+            currentDir = new DirectoryInfo(imagefilepath.FullName);
             fileSystemWatcher1.Path = currentDir.FullName;
             fileSystemWatcher1.EnableRaisingEvents = true;
             fileSystemWatcher1.NotifyFilter = NotifyFilters.LastAccess
@@ -104,6 +86,14 @@ namespace ImageViewer1
                        | NotifyFilters.DirectoryName;
 
             newFileList();
+
+
+            Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
+
+            this.WindowState = FormWindowState.Maximized;
+
+
+            //pictureBox1.Image = screenBuffer;
 
             this.BringToFront();
 
@@ -145,6 +135,7 @@ namespace ImageViewer1
                     break;
                 }
             }
+            imagefilepath = filelist[currentImageIndex];
         }
 
         private void CenterImage()
@@ -378,15 +369,22 @@ namespace ImageViewer1
             pictureBox1.Capture = false;
         }
 
-        private void IncreaseToolStripMenuItem_Click(object sender, EventArgs e)
+        private void openNewFile()
         {
+            using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
+            {
+                openFileDialog1.InitialDirectory = currentDir.FullName;
+                openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
+                openFileDialog1.FilterIndex = 1;
+                openFileDialog1.RestoreDirectory = true;
 
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    imagefilepath = new FileInfo(openFileDialog1.FileName);
+                }
+            }
         }
 
-        private void PreviousFrameToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
 
     }
 }

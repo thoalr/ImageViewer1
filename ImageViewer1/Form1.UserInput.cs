@@ -11,6 +11,7 @@ using System.IO;
 using System.Windows.Input;
 using System.Drawing.Drawing2D;
 using System.Runtime.Caching;
+using System.Drawing.Imaging;
 
 namespace ImageViewer1
 {
@@ -38,68 +39,83 @@ namespace ImageViewer1
 
         private void Form1_KeyPress_1(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar.Equals('+'))
+            switch (e.KeyChar)
             {
-                Zoom *= ZoomValue;
-                if (Zoom > maxZoom) Zoom = maxZoom;
-                zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
-                //CenterImage();
-            }
-            if (e.KeyChar.Equals('-'))
-            {
-                Zoom /= ZoomValue;
-                if (Zoom < minZoom) Zoom = minZoom;
-                zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
-                //CenterImage();
-            }
-            if (e.KeyChar.Equals('o'))
-            {
-                if (isGIF) timer1.Stop();
-                using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
-                {
-
-                    openFileDialog1.InitialDirectory = currentDir.FullName;
-                    openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png;*.gif|All files|*.*";
-                    openFileDialog1.FilterIndex = 1;
-                    openFileDialog1.RestoreDirectory = true;
-
-                    if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                case '+': // zoom in
+                    Zoom *= ZoomValue;
+                    if (Zoom > maxZoom) Zoom = maxZoom;
+                    zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
+                    CenterImage();
+                    pictureBox1.Invalidate();
+                    break;
+                case '-': // zoom out
+                    Zoom /= ZoomValue;
+                    if (Zoom < minZoom) Zoom = minZoom;
+                    zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
+                    CenterImage();
+                    pictureBox1.Invalidate();
+                    break;
+                case 'o': // open new file from filedialog
+                    if (isGIF) timer1.Stop();
+                    openNewFile();
+                    CenterImage();
+                    setGIF();
+                    pictureBox1.Invalidate();
+                    break;
+                case 's': // start stop timer for GIF
+                    if(isGIF) timer1.Enabled = timer1.Enabled ? false : true;
+                    break;
+                case 'n': // next frame
+                    if (isGIF)
                     {
-                        imagefilepath = new FileInfo(openFileDialog1.FileName);
-
-                        currentDir = new DirectoryInfo(imagefilepath.DirectoryName);
-
-                        newFileList();
-
-                        Image = (Bitmap)Bitmap.FromFile(imagefilepath.FullName);
-                        zoomType = ZoomType.Center;
-
-                        firstDraw = true;
-
+                        currentFrame = (currentFrame + 1) % gifFrameCount;
+                        Image.SelectActiveFrame(fdimension, currentFrame);
                         pictureBox1.Invalidate();
-                        fileSystemWatcher1.Path = currentDir.FullName;
-                        this.Text = "ImageViewer " + imagefilepath.FullName;
                     }
-                }
-                setGIF();
+                    break;
+                case 'b': // previous frame
+                    if (isGIF)
+                    {
+                        currentFrame = (currentFrame - 1 + gifFrameCount) % gifFrameCount;
+                        Image.SelectActiveFrame(fdimension, currentFrame);
+                        pictureBox1.Invalidate();
+                    }
+                    break;
+                case 'x': // default speed as set by file
+                    if (isGIF)
+                    {
+                        PropertyItem item = Image.GetPropertyItem(0x5100);
+                        interval = (item.Value[0] + item.Value[1] * 256);
+                    }
+                    break;
+                case 'c': // speed increase so decrease interval
+                    if (isGIF)
+                    {
+                        interval = Math.Max(interval - 2, 1);
+                        timer1.Interval = interval;
+                    }
+                    break;
+                case 'v': // speed decrease so increase interval
+                    if (isGIF)
+                    {
+                        interval = Math.Min(interval + 2, 100);
+                        timer1.Interval = interval;
+                    }
+                    break;
             }
-
-            CenterImage();
-
-            pictureBox1.Invalidate();
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Left || keyData == Keys.XButton1)
             {
-                if(isGIF) timer1.Stop();
+                if (isGIF) timer1.Stop();
                 ChangeImage(-1);
                 setGIF();
             }
             if (keyData == Keys.Right || keyData == Keys.XButton2)
             {
-                if(isGIF) timer1.Stop();
+                if (isGIF) timer1.Stop();
                 ChangeImage(1);
                 setGIF();
             }
@@ -111,7 +127,7 @@ namespace ImageViewer1
 
         private void PictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
-            if(isGIF) timer1.Stop();
+            if (isGIF) timer1.Stop();
             float oldZoom = Zoom;
             int sign = Math.Sign(e.Delta);
             Zoom *= sign > 0 ? ZoomValue : 1 / ZoomValue;
@@ -124,7 +140,7 @@ namespace ImageViewer1
 
             CenterImage();
             pictureBox1.Invalidate();
-            if(isGIF) timer1.Start();
+            if (isGIF) timer1.Start();
         }
 
         // Horizontal Scrolling from
@@ -180,14 +196,14 @@ namespace ImageViewer1
             //{
             if (e.Delta <= -10)
             {
-                if(isGIF) timer1.Stop();
+                if (isGIF) timer1.Stop();
                 ChangeImage(-1);
                 setGIF();
             }
 
             if (e.Delta >= 10)
             {
-                if(isGIF) timer1.Stop();
+                if (isGIF) timer1.Stop();
                 ChangeImage(1);
                 setGIF();
             }
@@ -208,14 +224,14 @@ namespace ImageViewer1
             //{
             if (e.Button == MouseButtons.XButton1)
             {
-                if(isGIF) timer1.Stop();
+                if (isGIF) timer1.Stop();
                 ChangeImage(-1);
                 setGIF();
                 return;
             }
             if (e.Button == MouseButtons.XButton2)
             {
-                if(isGIF) timer1.Stop();
+                if (isGIF) timer1.Stop();
                 ChangeImage(1);
                 setGIF();
                 return;
@@ -239,7 +255,7 @@ namespace ImageViewer1
 
             pictureBox1.Invalidate();
 
-            this.Text = "ImageViewer - " + imagefilepath.FullName;
+            this.Text = "ImageViewer - " + filelist[currentImageIndex].FullName;
         }
 
         private void PictureBox1_MouseLeave(object sender, EventArgs e)
@@ -255,7 +271,6 @@ namespace ImageViewer1
             CenterImage();
             pictureBox1.Invalidate();
         }
-
 
     }
 }

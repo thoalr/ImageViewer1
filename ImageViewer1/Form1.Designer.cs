@@ -122,35 +122,35 @@
             this.nameToolStripMenuItem.Checked = true;
             this.nameToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.nameToolStripMenuItem.Name = "nameToolStripMenuItem";
-            this.nameToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.nameToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
             this.nameToolStripMenuItem.Text = "Name";
             this.nameToolStripMenuItem.Click += new System.EventHandler(this.NameToolStripMenuItem_Click);
             // 
             // dateToolStripMenuItem
             // 
             this.dateToolStripMenuItem.Name = "dateToolStripMenuItem";
-            this.dateToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.dateToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
             this.dateToolStripMenuItem.Text = "Date";
             this.dateToolStripMenuItem.Click += new System.EventHandler(this.DateToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(221, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(167, 6);
             // 
             // ascendingToolStripMenuItem
             // 
             this.ascendingToolStripMenuItem.Checked = true;
             this.ascendingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ascendingToolStripMenuItem.Name = "ascendingToolStripMenuItem";
-            this.ascendingToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.ascendingToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
             this.ascendingToolStripMenuItem.Text = "Ascending";
             this.ascendingToolStripMenuItem.Click += new System.EventHandler(this.AscendingToolStripMenuItem_Click);
             // 
             // descendingToolStripMenuItem
             // 
             this.descendingToolStripMenuItem.Name = "descendingToolStripMenuItem";
-            this.descendingToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.descendingToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
             this.descendingToolStripMenuItem.Text = "Descending";
             this.descendingToolStripMenuItem.Click += new System.EventHandler(this.DescendingToolStripMenuItem_Click);
             // 
@@ -176,19 +176,21 @@
             // startStopToolStripMenuItem
             // 
             this.startStopToolStripMenuItem.Name = "startStopToolStripMenuItem";
-            this.startStopToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.startStopToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.startStopToolStripMenuItem.Text = "Start / Stop (S)";
+            this.startStopToolStripMenuItem.Click += new System.EventHandler(this.StartStopToolStripMenuItem_Click);
             // 
             // nextFrameToolStripMenuItem
             // 
             this.nextFrameToolStripMenuItem.Name = "nextFrameToolStripMenuItem";
-            this.nextFrameToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.nextFrameToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.nextFrameToolStripMenuItem.Text = "Next Frame (N)";
+            this.nextFrameToolStripMenuItem.Click += new System.EventHandler(this.NextFrameToolStripMenuItem_Click);
             // 
             // previousFrameToolStripMenuItem
             // 
             this.previousFrameToolStripMenuItem.Name = "previousFrameToolStripMenuItem";
-            this.previousFrameToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.previousFrameToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.previousFrameToolStripMenuItem.Text = "Previous Frame (B)";
             this.previousFrameToolStripMenuItem.Click += new System.EventHandler(this.PreviousFrameToolStripMenuItem_Click);
             // 
@@ -199,27 +201,29 @@
             this.increaseToolStripMenuItem,
             this.decreaseToolStripMenuItem});
             this.timeDelayToolStripMenuItem.Name = "timeDelayToolStripMenuItem";
-            this.timeDelayToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.timeDelayToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.timeDelayToolStripMenuItem.Text = "Speed";
             // 
             // putValueHereToolStripMenuItem
             // 
             this.putValueHereToolStripMenuItem.Name = "putValueHereToolStripMenuItem";
-            this.putValueHereToolStripMenuItem.Size = new System.Drawing.Size(176, 26);
+            this.putValueHereToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.putValueHereToolStripMenuItem.Text = "Default (X)";
+            this.putValueHereToolStripMenuItem.Click += new System.EventHandler(this.PutValueHereToolStripMenuItem_Click);
             // 
             // increaseToolStripMenuItem
             // 
             this.increaseToolStripMenuItem.Name = "increaseToolStripMenuItem";
-            this.increaseToolStripMenuItem.Size = new System.Drawing.Size(176, 26);
+            this.increaseToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.increaseToolStripMenuItem.Text = "Increase (C)";
             this.increaseToolStripMenuItem.Click += new System.EventHandler(this.IncreaseToolStripMenuItem_Click);
             // 
             // decreaseToolStripMenuItem
             // 
             this.decreaseToolStripMenuItem.Name = "decreaseToolStripMenuItem";
-            this.decreaseToolStripMenuItem.Size = new System.Drawing.Size(176, 26);
+            this.decreaseToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.decreaseToolStripMenuItem.Text = "Decrease (V)";
+            this.decreaseToolStripMenuItem.Click += new System.EventHandler(this.DecreaseToolStripMenuItem_Click);
             // 
             // fileSystemWatcher1
             // 
