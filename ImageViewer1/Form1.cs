@@ -25,13 +25,15 @@ namespace ImageViewer1
         //Dictionary<string, Bitmap> imageCache;
         //MemoryCache imageCache = MemoryCache.Default;
 
-        readonly string[] extensions = new string[] { ".jpg", ".jpeg", ".png" };
+        readonly string[] extensions = new string[] { ".jpg", ".jpeg", ".png", ".gif" };
 
 
         // Values for current image
         private Point image_offset = new Point(0, 0);
         Bitmap Image;
         float Zoom = 100;
+        int maxZoom = 1000;
+        int minZoom = 5;
         float ZoomValue = 1.3f;
         bool firstDraw = true;
 
@@ -104,6 +106,10 @@ namespace ImageViewer1
             newFileList();
 
             this.BringToFront();
+
+            this.Text = "ImageViewer - " + imagefilepath.FullName;
+
+            setGIF();
 
         }
 
@@ -193,11 +199,6 @@ namespace ImageViewer1
             if (Image == null) return;
             //e.Graphics.Clear(Color.White);
 
-            if(isGIF)
-            {
-                
-            }
-
             if (firstDraw)
             {
                 firstDraw = false;
@@ -209,7 +210,7 @@ namespace ImageViewer1
             e.Graphics.DrawImage(Image, new Rectangle(image_offset, new Size((int)(Zoom * Image.Size.Width / 100.0f),
                 (int)(Zoom * Image.Size.Height / 100.0f) + 1)), new Rectangle(new Point(0, 0), Image.Size),
                 GraphicsUnit.Pixel);
-            pictureBox1.Invalidate();
+            //pictureBox1.Invalidate();
 
         }
 
@@ -223,30 +224,28 @@ namespace ImageViewer1
         private void FileSystemWatcher1_Changed(object sender, FileSystemEventArgs e)
         {
             // Reload when file changes
-            if (e.ChangeType == WatcherChangeTypes.Created && extensions.Contains(Path.GetExtension(e.FullPath)))
+            if ((e.ChangeType == WatcherChangeTypes.Created || e.ChangeType == WatcherChangeTypes.Renamed ||
+                e.ChangeType == WatcherChangeTypes.Deleted) && extensions.Contains(Path.GetExtension(e.FullPath)))
             {
                 newFileList();
-            }
-            if (e.ChangeType == WatcherChangeTypes.Renamed && extensions.Contains(Path.GetExtension(e.FullPath)))
-            {
-                newFileList();
-                if (currentImageIndex < 0) currentImageIndex = 0;
-            }
-            if (e.ChangeType == WatcherChangeTypes.Deleted && extensions.Contains(Path.GetExtension(e.FullPath)))
-            {
-                newFileList();
-                if (currentImageIndex < 0) currentImageIndex = 0;
             }
 
+            if (currentImageIndex < 0)
+            {
+                if(isGIF) timer1.Stop();
+                currentImageIndex = 0;
+                setGIF();
+            }
         }
 
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if(isGIF) timer1.Stop();
             using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
             {
 
                 openFileDialog1.InitialDirectory = currentDir.FullName;
-                openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
+                openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png;*.gif|All files|*.*";
                 openFileDialog1.FilterIndex = 1;
                 openFileDialog1.RestoreDirectory = true;
 
@@ -265,8 +264,10 @@ namespace ImageViewer1
 
                     pictureBox1.Invalidate();
                     fileSystemWatcher1.Path = currentDir.FullName;
+                    this.Text = "ImageViewer " + imagefilepath.FullName;
                 }
             }
+            setGIF();
         }
 
         private void PictureBox1_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -386,5 +387,6 @@ namespace ImageViewer1
         {
 
         }
+
     }
 }

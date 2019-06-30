@@ -41,16 +41,47 @@ namespace ImageViewer1
             if (e.KeyChar.Equals('+'))
             {
                 Zoom *= ZoomValue;
-                if (Zoom > 500) Zoom = 500;
+                if (Zoom > maxZoom) Zoom = maxZoom;
                 zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
                 //CenterImage();
             }
-            if (e.KeyChar == '-')
+            if (e.KeyChar.Equals('-'))
             {
                 Zoom /= ZoomValue;
-                if (Zoom < 10) Zoom = 10;
+                if (Zoom < minZoom) Zoom = minZoom;
                 zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
                 //CenterImage();
+            }
+            if (e.KeyChar.Equals('o'))
+            {
+                if (isGIF) timer1.Stop();
+                using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
+                {
+
+                    openFileDialog1.InitialDirectory = currentDir.FullName;
+                    openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png;*.gif|All files|*.*";
+                    openFileDialog1.FilterIndex = 1;
+                    openFileDialog1.RestoreDirectory = true;
+
+                    if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                    {
+                        imagefilepath = new FileInfo(openFileDialog1.FileName);
+
+                        currentDir = new DirectoryInfo(imagefilepath.DirectoryName);
+
+                        newFileList();
+
+                        Image = (Bitmap)Bitmap.FromFile(imagefilepath.FullName);
+                        zoomType = ZoomType.Center;
+
+                        firstDraw = true;
+
+                        pictureBox1.Invalidate();
+                        fileSystemWatcher1.Path = currentDir.FullName;
+                        this.Text = "ImageViewer " + imagefilepath.FullName;
+                    }
+                }
+                setGIF();
             }
 
             CenterImage();
@@ -62,25 +93,15 @@ namespace ImageViewer1
         {
             if (keyData == Keys.Left || keyData == Keys.XButton1)
             {
-                currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
-
-                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
-                zoomType = ZoomType.Center;
-
-                firstDraw = true;
-
-                pictureBox1.Invalidate();
+                if(isGIF) timer1.Stop();
+                ChangeImage(-1);
+                setGIF();
             }
             if (keyData == Keys.Right || keyData == Keys.XButton2)
             {
-                currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
-
-                Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
-                zoomType = ZoomType.Center;
-
-                firstDraw = true;
-
-                pictureBox1.Invalidate();
+                if(isGIF) timer1.Stop();
+                ChangeImage(1);
+                setGIF();
             }
 
 
@@ -90,19 +111,20 @@ namespace ImageViewer1
 
         private void PictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
+            if(isGIF) timer1.Stop();
             float oldZoom = Zoom;
             int sign = Math.Sign(e.Delta);
             Zoom *= sign > 0 ? ZoomValue : 1 / ZoomValue;
-            if (Zoom > 500) Zoom = 500;
-            if (Zoom < 10) Zoom = 10;
+            if (Zoom > maxZoom) Zoom = maxZoom;
+            if (Zoom < minZoom) Zoom = minZoom;
             zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
 
             image_offset.X = (int)(image_offset.X * Zoom / oldZoom) + (int)(e.Location.X * (1 - Zoom / oldZoom));
             image_offset.Y = (int)(image_offset.Y * Zoom / oldZoom) + (int)(e.Location.Y * (1 - Zoom / oldZoom));
 
             CenterImage();
-
             pictureBox1.Invalidate();
+            if(isGIF) timer1.Start();
         }
 
         // Horizontal Scrolling from
@@ -111,21 +133,21 @@ namespace ImageViewer1
         {
             //try
             //{
-                base.WndProc(ref m);
-                if (this.IsDisposed || m.HWnd != this.Handle)
-                {
-                    return;
-                }
-                switch (m.Msg)
-                {
-                    case Win32Messages.WM_MOUSEHWHEEL:
-                        FireMouseHWheel(m.WParam, m.LParam);
-                        m.Result = (IntPtr)1;
-                        break;
-                    default:
-                        break;
+            base.WndProc(ref m);
+            if (this.IsDisposed || m.HWnd != this.Handle)
+            {
+                return;
+            }
+            switch (m.Msg)
+            {
+                case Win32Messages.WM_MOUSEHWHEEL:
+                    FireMouseHWheel(m.WParam, m.LParam);
+                    m.Result = (IntPtr)1;
+                    break;
+                default:
+                    break;
 
-                }
+            }
             //}
             //catch (Exception e)
             //{
@@ -156,29 +178,19 @@ namespace ImageViewer1
         {
             //try
             //{
-                if (e.Delta <= -10)
-                {
-                    currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
+            if (e.Delta <= -10)
+            {
+                if(isGIF) timer1.Stop();
+                ChangeImage(-1);
+                setGIF();
+            }
 
-                    Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
-                    zoomType = ZoomType.Center;
-
-                    firstDraw = true;
-
-                    pictureBox1.Invalidate();
-                }
-
-                if (e.Delta >= 10)
-                {
-                    currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
-
-                    Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
-                    zoomType = ZoomType.Center;
-
-                    firstDraw = true;
-
-                    pictureBox1.Invalidate();
-                }
+            if (e.Delta >= 10)
+            {
+                if(isGIF) timer1.Stop();
+                ChangeImage(1);
+                setGIF();
+            }
             //}
             //catch (Exception ex)
             //{
@@ -194,35 +206,40 @@ namespace ImageViewer1
             mouseLastPos = e.Location;
             //try
             //{
-                if (e.Button == MouseButtons.XButton1)
-                {
-                    currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
-
-                    Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
-                    zoomType = ZoomType.Center;
-
-                    firstDraw = true;
-
-                    pictureBox1.Invalidate();
-                    return;
-                }
-                if (e.Button == MouseButtons.XButton2)
-                {
-                    currentImageIndex = currentImageIndex < filelist.Length - 1 ? currentImageIndex + 1 : 0;
-
-                    Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
-                    zoomType = ZoomType.Center;
-
-                    firstDraw = true;
-
-                    pictureBox1.Invalidate();
-                    return;
-                }
+            if (e.Button == MouseButtons.XButton1)
+            {
+                if(isGIF) timer1.Stop();
+                ChangeImage(-1);
+                setGIF();
+                return;
+            }
+            if (e.Button == MouseButtons.XButton2)
+            {
+                if(isGIF) timer1.Stop();
+                ChangeImage(1);
+                setGIF();
+                return;
+            }
             //}
             //catch (Exception ex)
             //{
             //    MessageBox.Show("Error: " + ex, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
             //};
+        }
+
+        private void ChangeImage(int direction)
+        {
+
+            currentImageIndex = (currentImageIndex + direction + filelist.Length) % (filelist.Length);
+
+            Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
+            zoomType = ZoomType.Center;
+
+            firstDraw = true;
+
+            pictureBox1.Invalidate();
+
+            this.Text = "ImageViewer - " + imagefilepath.FullName;
         }
 
         private void PictureBox1_MouseLeave(object sender, EventArgs e)
