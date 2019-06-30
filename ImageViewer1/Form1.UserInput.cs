@@ -109,8 +109,8 @@ namespace ImageViewer1
         // http://www.philosophicalgeek.com/2007/07/27/mouse-tilt-wheel-horizontal-scrolling-in-c/
         protected override void WndProc(ref Message m)
         {
-            try
-            {
+            //try
+            //{
                 base.WndProc(ref m);
                 if (this.IsDisposed || m.HWnd != this.Handle)
                 {
@@ -126,11 +126,11 @@ namespace ImageViewer1
                         break;
 
                 }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Error: " + e, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            };
+            //}
+            //catch (Exception e)
+            //{
+            //    MessageBox.Show("Error: " + e, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //};
         }
 
         public event EventHandler<MouseEventArgs> MouseHWheel;
@@ -154,8 +154,8 @@ namespace ImageViewer1
         }
         protected virtual void OnMouseHWheel(MouseEventArgs e)
         {
-            try
-            {
+            //try
+            //{
                 if (e.Delta <= -10)
                 {
                     currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
@@ -179,11 +179,11 @@ namespace ImageViewer1
 
                     pictureBox1.Invalidate();
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            };
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show("Error: " + ex, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //};
         }
         // Horizontal scrolling END
 
@@ -192,8 +192,8 @@ namespace ImageViewer1
             zoomType = ZoomType.Free;
             pictureBox1.Capture = true;
             mouseLastPos = e.Location;
-            try
-            {
+            //try
+            //{
                 if (e.Button == MouseButtons.XButton1)
                 {
                     currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : filelist.Length - 1;
@@ -218,11 +218,11 @@ namespace ImageViewer1
                     pictureBox1.Invalidate();
                     return;
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            };
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show("Error: " + ex, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //};
         }
 
         private void PictureBox1_MouseLeave(object sender, EventArgs e)

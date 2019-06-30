@@ -313,10 +313,12 @@ namespace ImageViewer1
         {
             if (nameToolStripMenuItem.Checked) return;
             imagefilepath = new FileInfo(filelist[currentImageIndex].FullName);
-            newFileList();
 
             nameToolStripMenuItem.Checked = true;
             dateToolStripMenuItem.Checked = false;
+
+            newFileList();
+
             //nameToolStripMenuItem.CheckState = CheckState.Checked;
 
         }
@@ -325,10 +327,12 @@ namespace ImageViewer1
         {
             if (dateToolStripMenuItem.Checked) return;
             imagefilepath = new FileInfo(filelist[currentImageIndex].FullName);
-            newFileList();
 
             nameToolStripMenuItem.Checked = false;
             dateToolStripMenuItem.Checked = true;
+
+            newFileList();
+
         }
 
         private void AscendingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -371,6 +375,16 @@ namespace ImageViewer1
         {
             Image.Dispose();
             pictureBox1.Capture = false;
+        }
+
+        private void IncreaseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void PreviousFrameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
