@@ -1,58 +1,47 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-using System.Windows.Input;
-using System.Drawing.Drawing2D;
-using System.Runtime.Caching;
 
 namespace ImageViewer1
 {
     public partial class Form1 : Form
     {
-
-        FileInfo imagefilepath;
+        FileInfo imagefilepath;    // a mostly temporary variable for storing an image file path
         DirectoryInfo currentDir = new DirectoryInfo(@"C:\");
-        int currentImageIndex = 0;
-        FileInfo[] filelist;
+        int currentImageIndex = 0; // Index of the current image being viewed
+        FileInfo[] filelist;       // contains a sorted array of all files in a directory
 
-        //Dictionary<string, Bitmap> imageCache;
-        //MemoryCache imageCache = MemoryCache.Default;
-
+        // The file extensions this program will be able to read and display
         readonly string[] extensions = new string[] { ".jpg", ".jpeg", ".png", ".gif" };
 
 
         // Values for current image
         private Point image_offset = new Point(0, 0);
-        Bitmap Image;
-        float Zoom = 100;
-        int maxZoom = 2000;
-        int minZoom = 5;
-        float ZoomValue = 1.3f;
-        bool firstDraw = true;
+        Bitmap Image;            // The image to be displayed
+        float Zoom = 100;        // The zoom of the image
+        int maxZoom = 2000;      // The maximum allowed zoom
+        int minZoom = 5;         // The minimum allowed zoom
+        float ZoomValue = 1.3f;  // The step for increaing and decreasing the zoom
+        bool firstDraw = true;   // Value that says wether this is the first drawing of the image
 
         enum ZoomType
         {
-            Center,
-            Free
+            Center, // The image is fixed in the center of the screen
+            Free    // The image is allowed to move freely
         }
-        ZoomType zoomType = ZoomType.Center;
+        ZoomType zoomType = ZoomType.Center; // The current zoom type
 
-        Point mouseLastPos = new Point(0, 0);
-
-
+        // Default constructor
         public Form1()
         {
             InitializeComponent();
             Form1_Construct();
         }
 
+        // Constructor for passing in commandline argument
         public Form1(string arg)
         {
             imagefilepath = new FileInfo(arg);
@@ -61,52 +50,47 @@ namespace ImageViewer1
             Form1_Construct();
         }
 
+        // Helper contructor to be called by all contructors
         private void Form1_Construct()
         {
-            //this.SuspendLayout();
-            pictureBox1.MouseWheel += PictureBox1_MouseWheel;
-            //this.ResumeLayout();            
+            pictureBox1.MouseWheel += PictureBox1_MouseWheel;          
         }
 
-
+        // Loads the provided image or forces the user to select an image from a filedialog
         private void Form1_Load(object sender, EventArgs e)
         {
-
             while (imagefilepath == null)
             {
                 openNewFile();
             }
 
             currentDir = new DirectoryInfo(imagefilepath.FullName);
-            fileSystemWatcher1.Path = currentDir.FullName;
-            fileSystemWatcher1.EnableRaisingEvents = true;
-            fileSystemWatcher1.NotifyFilter = NotifyFilters.LastAccess
-                       | NotifyFilters.LastWrite
-                       | NotifyFilters.FileName
-                       | NotifyFilters.DirectoryName;
 
+            // Populate filelist with all files in current directory whith allowed file extensions
             newFileList();
 
-
+            // Load image
             Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
-
+            // Maximaise window
             this.WindowState = FormWindowState.Maximized;
-
-
-            //pictureBox1.Image = screenBuffer;
-
+            // Bring this form to the front of the screen
             this.BringToFront();
 
-            this.Text = "ImageViewer - " + imagefilepath.FullName;
+            updateFormText();
 
-            setGIF();
+            setGIF(); // Check wether image is a GIF
+        }
 
+
+        private void updateFormText()
+        {
+            this.Text = "ImageViewer - " + imagefilepath.FullName + " - Zoom: " + Zoom;
         }
 
         void newFileList()
         {
             if (currentDir == null) return;
-
+            // Get files and order them
             var tmp = currentDir.GetFiles("*.*", SearchOption.TopDirectoryOnly)
                 .Where(s => extensions.Contains(s.Extension));
 
@@ -124,9 +108,9 @@ namespace ImageViewer1
                 else
                     tmp = tmp.OrderByDescending(p => p.CreationTimeUtc);
             }
-
             filelist = tmp.ToArray(); 
-
+            
+            // Find index of current image
             for(int i = 0; i < filelist.Length; i++)
             {
                 if (filelist[i].FullName == imagefilepath.FullName)
@@ -165,7 +149,7 @@ namespace ImageViewer1
                     image_offset.Y = (int)((pictureBox1.Height - (Zoom * Image.Size.Height / 100.0f)) / 2);
                 }
             }
-
+            // Keep images within bounds of screen
             int tmpWidth = PercentOfCalc(Image.Width, Zoom);
             int tmpHeight = PercentOfCalc(Image.Height, Zoom);
             if (image_offset.X > pictureBox1.Width - tmpWidth)
@@ -181,10 +165,10 @@ namespace ImageViewer1
 
         int PercentOfCalc(int value, double zoom)
         {
-            return (int)(value * (zoom * .1) / 100); // return 20% (1/5) of image width with current zoom level
+            return (int)(value * (zoom * .1) / 100); // return 10% of image size with current zoom level
         }
 
-
+        // Overriden Paint method to handle the drawing of images ourselves
         private void PictureBox1_Paint(object sender, PaintEventArgs e)
         {
             if (Image == null) return;
@@ -196,6 +180,7 @@ namespace ImageViewer1
                 Zoom = 100.0f * pictureBox1.Height / Image.Height;
                 zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
                 CenterImage();
+                updateFormText();
             }
 
             e.Graphics.DrawImage(Image, new Rectangle(image_offset, new Size((int)(Zoom * Image.Size.Width / 100.0f),
@@ -210,57 +195,12 @@ namespace ImageViewer1
 
         }
 
-        
-
-        private void FileSystemWatcher1_Changed(object sender, FileSystemEventArgs e)
-        {
-            // Reload when file changes
-            if ((e.ChangeType == WatcherChangeTypes.Created || e.ChangeType == WatcherChangeTypes.Renamed ||
-                e.ChangeType == WatcherChangeTypes.Deleted) && extensions.Contains(Path.GetExtension(e.FullPath)))
-            {
-                newFileList();
-            }
-
-            if (currentImageIndex < 0)
-            {
-                if(isGIF) timer1.Stop();
-                currentImageIndex = 0;
-                setGIF();
-            }
-        }
-
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if(isGIF) timer1.Stop();
-            using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
-            {
-
-                openFileDialog1.InitialDirectory = currentDir.FullName;
-                openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png;*.gif|All files|*.*";
-                openFileDialog1.FilterIndex = 1;
-                openFileDialog1.RestoreDirectory = true;
-
-                if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                {
-                    imagefilepath = new FileInfo(openFileDialog1.FileName);
-
-                    currentDir = new DirectoryInfo(imagefilepath.DirectoryName);
-
-                    newFileList();
-
-                    Image = (Bitmap)Bitmap.FromFile(imagefilepath.FullName);
-                    zoomType = ZoomType.Center;
-
-                    firstDraw = true;
-
-                    pictureBox1.Invalidate();
-                    fileSystemWatcher1.Path = currentDir.FullName;
-                    this.Text = "ImageViewer " + imagefilepath.FullName;
-                }
-            }
-            setGIF();
+            openNewFile();
         }
 
+        // Go fullscreen or exit fullscreen
         private void PictureBox1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left) return;
@@ -285,6 +225,7 @@ namespace ImageViewer1
             pictureBox1.Invalidate();
         }
 
+        // Go fullscreen or exit fullscreen
         private void FullscreenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (this.FormBorderStyle == FormBorderStyle.None)
@@ -301,6 +242,7 @@ namespace ImageViewer1
             }
         }
 
+        // Set sorting order to name
         private void NameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (nameToolStripMenuItem.Checked) return;
@@ -315,6 +257,7 @@ namespace ImageViewer1
 
         }
 
+        // Set sorting order to creation date
         private void DateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (dateToolStripMenuItem.Checked) return;
@@ -327,6 +270,7 @@ namespace ImageViewer1
 
         }
 
+        // Set sorting order to ascending
         private void AscendingToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ascendingToolStripMenuItem.Checked) return;
@@ -346,6 +290,7 @@ namespace ImageViewer1
             //ascendingToolStripMenuItem.CheckState =
         }
 
+        // Set sorteing order to descending
         private void DescendingToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (descendingToolStripMenuItem.Checked) return;
@@ -363,28 +308,57 @@ namespace ImageViewer1
             ascendingToolStripMenuItem.Checked = false;
         }
 
+        // This is probably unnecessary
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             Image.Dispose();
             pictureBox1.Capture = false;
         }
 
+        // Open filedialog to ask user to select new file
         private void openNewFile()
         {
+            if(isGIF) timer1.Stop();
             using (OpenFileDialog openFileDialog1 = new OpenFileDialog())
             {
+
                 openFileDialog1.InitialDirectory = currentDir.FullName;
-                openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png|All files (*.*)|*.*";
+                openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png;*.gif|All files|*.*";
                 openFileDialog1.FilterIndex = 1;
                 openFileDialog1.RestoreDirectory = true;
 
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
                 {
                     imagefilepath = new FileInfo(openFileDialog1.FileName);
+
+
+                    currentDir = new DirectoryInfo(imagefilepath.DirectoryName);
+
+                    newFileList();
+
+                    Image = (Bitmap)Bitmap.FromFile(imagefilepath.FullName);
+                    zoomType = ZoomType.Center;
+
+                    firstDraw = true;
+
+                    pictureBox1.Invalidate();
+                    updateFormText();
                 }
             }
+            setGIF();
         }
 
-
+        // Refresh filelist
+        private void RefreshDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            newFileList();
+            
+            if (currentImageIndex < 0)
+            {
+                if (isGIF) timer1.Stop();
+                currentImageIndex = 0;
+                setGIF();
+            }
+        }
     }
 }

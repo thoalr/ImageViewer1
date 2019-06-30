@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿/* 
+ * This file contains GIF functions for the image viewer
+ */
+
+
+using System;
 using System.Windows.Forms;
-using System.IO;
-using System.Windows.Input;
-using System.Drawing.Drawing2D;
-using System.Runtime.Caching;
 using System.Drawing.Imaging;
-using System.Diagnostics;
 
 namespace ImageViewer1
 {
@@ -20,14 +13,11 @@ namespace ImageViewer1
     {
         private bool isGIF = false;
         private FrameDimension fdimension;
-        private int gifFrameCount = 1;
-        private int currentFrame = 0;
-        //private bool gifIsPlaying = false;
-        int interval;
-        //Stopwatch stopwatch;
-        long pTicks;
-        long cTick;
+        private int gifFrameCount = 1;  // Number of frames in the GIF image
+        private int currentFrame = 0;   // Current frame displayed of GIF image
+        int interval;                   // The interval between the frames of the GIF
 
+        // Check wether current image is a gif and set everything up accordingly
         void setGIF()
         {
             if(!filelist[currentImageIndex].Extension.Equals(".gif"))
@@ -58,6 +48,7 @@ namespace ImageViewer1
             timer1.Start();
         }
 
+        // Function called by timer
         private void Timer1_Tick(object sender, EventArgs e)
         {
             currentFrame = (currentFrame + 1) % gifFrameCount;

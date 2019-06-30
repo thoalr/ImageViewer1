@@ -1,26 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿/*
+ * This file conatins all function for button and mouse press events
+ */
+
+using System;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
-using System.Windows.Input;
-using System.Drawing.Drawing2D;
-using System.Runtime.Caching;
 using System.Drawing.Imaging;
 
 namespace ImageViewer1
 {
     public partial class Form1 : Form
     {
+        // Abstract class used by method to get tilt wheel event from mouse
         abstract class Win32Messages
         {
             public const int WM_MOUSEHWHEEL = 0x020E;//discovered via Spy++ 
         }
+
+        // Abstract class used by method to get tilt wheel event from mouse
         abstract class Utils
         {
             internal static Int32 HIWORD(IntPtr ptr)
@@ -28,7 +25,6 @@ namespace ImageViewer1
                 Int32 val32 = ptr.ToInt32();
                 return ((val32 >> 16) & 0xFFFF);
             }
-
             internal static Int32 LOWORD(IntPtr ptr)
             {
                 Int32 val32 = ptr.ToInt32();
@@ -37,11 +33,15 @@ namespace ImageViewer1
 
         }
 
+        Point mouseLastPos = new Point(0, 0); // Last mouse position used for panning
+
+        // Event handler for when a keyboard key is pressed
         private void Form1_KeyPress_1(object sender, KeyPressEventArgs e)
         {
             switch (e.KeyChar)
             {
                 case '+': // zoom in
+                    zoomType = ZoomType.Center;
                     Zoom *= ZoomValue;
                     if (Zoom > maxZoom) Zoom = maxZoom;
                     zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
@@ -49,6 +49,7 @@ namespace ImageViewer1
                     pictureBox1.Invalidate();
                     break;
                 case '-': // zoom out
+                    zoomType = ZoomType.Center;
                     Zoom /= ZoomValue;
                     if (Zoom < minZoom) Zoom = minZoom;
                     zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
@@ -56,11 +57,7 @@ namespace ImageViewer1
                     pictureBox1.Invalidate();
                     break;
                 case 'o': // open new file from filedialog
-                    if (isGIF) timer1.Stop();
                     openNewFile();
-                    CenterImage();
-                    setGIF();
-                    pictureBox1.Invalidate();
                     break;
                 case 's': // start stop timer for GIF
                     if(isGIF) timer1.Enabled = timer1.Enabled ? false : true;
@@ -102,29 +99,40 @@ namespace ImageViewer1
                         timer1.Interval = interval;
                     }
                     break;
+                case 'r':
+                    newFileList();
+                    if (currentImageIndex < 0)
+                    {
+                        if (isGIF) timer1.Stop();
+                        currentImageIndex = 0;
+                        setGIF();
+                    }
+                    break;
             }
+            updateFormText();
         }
 
+        // event handler for when an arrow key is pressed
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (keyData == Keys.Left || keyData == Keys.XButton1)
+            if (keyData == Keys.Left)
             {
                 if (isGIF) timer1.Stop();
                 ChangeImage(-1);
                 setGIF();
             }
-            if (keyData == Keys.Right || keyData == Keys.XButton2)
+            if (keyData == Keys.Right)
             {
                 if (isGIF) timer1.Stop();
                 ChangeImage(1);
                 setGIF();
             }
 
-
-            return base.ProcessCmdKey(ref msg, keyData);
+            return base.ProcessCmdKey(ref msg, keyData); // Forward the event to the default handler
         }
 
-
+        // Event handler for the scrolling of the mousewheel
+        // Zoom the image on the point where the mouse is currently located
         private void PictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
             if (isGIF) timer1.Stop();
@@ -143,12 +151,11 @@ namespace ImageViewer1
             if (isGIF) timer1.Start();
         }
 
+        // Horizontal Scroll START
         // Horizontal Scrolling from
         // http://www.philosophicalgeek.com/2007/07/27/mouse-tilt-wheel-horizontal-scrolling-in-c/
         protected override void WndProc(ref Message m)
         {
-            //try
-            //{
             base.WndProc(ref m);
             if (this.IsDisposed || m.HWnd != this.Handle)
             {
@@ -162,13 +169,7 @@ namespace ImageViewer1
                     break;
                 default:
                     break;
-
             }
-            //}
-            //catch (Exception e)
-            //{
-            //    MessageBox.Show("Error: " + e, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //};
         }
 
         public event EventHandler<MouseEventArgs> MouseHWheel;
@@ -192,26 +193,19 @@ namespace ImageViewer1
         }
         protected virtual void OnMouseHWheel(MouseEventArgs e)
         {
-            //try
-            //{
-            if (e.Delta <= -10)
+            if (e.Delta <= -10) // Select previous image in directory
             {
                 if (isGIF) timer1.Stop();
                 ChangeImage(-1);
                 setGIF();
             }
 
-            if (e.Delta >= 10)
+            if (e.Delta >= 10) // Select next image in directory
             {
                 if (isGIF) timer1.Stop();
                 ChangeImage(1);
                 setGIF();
             }
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show("Error: " + ex, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //};
         }
         // Horizontal scrolling END
 
@@ -220,8 +214,6 @@ namespace ImageViewer1
             zoomType = ZoomType.Free;
             pictureBox1.Capture = true;
             mouseLastPos = e.Location;
-            //try
-            //{
             if (e.Button == MouseButtons.XButton1)
             {
                 if (isGIF) timer1.Stop();
@@ -236,16 +228,11 @@ namespace ImageViewer1
                 setGIF();
                 return;
             }
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show("Error: " + ex, "Error has ocurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //};
         }
 
+        // Show different image form directory
         private void ChangeImage(int direction)
         {
-
             currentImageIndex = (currentImageIndex + direction + filelist.Length) % (filelist.Length);
 
             Image = (Bitmap)Bitmap.FromFile(filelist[currentImageIndex].FullName);
@@ -255,7 +242,7 @@ namespace ImageViewer1
 
             pictureBox1.Invalidate();
 
-            this.Text = "ImageViewer - " + filelist[currentImageIndex].FullName;
+            updateFormText();
         }
 
         private void PictureBox1_MouseLeave(object sender, EventArgs e)
@@ -263,6 +250,7 @@ namespace ImageViewer1
             pictureBox1.Capture = false;
         }
 
+        // Pan image
         private void PictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             if (!pictureBox1.Capture || !(e.Button == MouseButtons.Left || e.Button == MouseButtons.Middle)) return;
