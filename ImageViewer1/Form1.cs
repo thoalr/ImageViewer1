@@ -15,14 +15,14 @@ namespace ImageViewer1
         FileInfo[] filelist;       // contains a sorted array of all files in a directory
 
         // The file extensions this program will be able to read and display
-        readonly string[] extensions = new string[] { ".jpg", ".jpeg", ".png", ".gif" };
+        readonly string[] extensions = new string[] { ".jpg", ".JPG", ".jpeg", ".png", ".gif" };
 
 
         // Values for current image
         private Point image_offset = new Point(0, 0);
         Bitmap Image;            // The image to be displayed
         float Zoom = 100;        // The zoom of the image
-        int maxZoom = 2000;      // The maximum allowed zoom
+        int maxZoom = 3000;      // The maximum allowed zoom
         int minZoom = 5;         // The minimum allowed zoom
         float ZoomValue = 1.3f;  // The step for increaing and decreasing the zoom
         bool firstDraw = true;   // Value that says wether this is the first drawing of the image
@@ -325,7 +325,7 @@ namespace ImageViewer1
             {
 
                 openFileDialog1.InitialDirectory = currentDir.FullName;
-                openFileDialog1.Filter = "image files|*.jpg;*.jpeg;*.png;*.gif|All files|*.*";
+                openFileDialog1.Filter = "image files|*.jpg;*.JPG;*.jpeg;*.png;*.gif|All files|*.*";
                 openFileDialog1.FilterIndex = 1;
                 openFileDialog1.RestoreDirectory = true;
 

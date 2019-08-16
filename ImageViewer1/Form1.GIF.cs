@@ -20,7 +20,7 @@ namespace ImageViewer1
         // Check wether current image is a gif and set everything up accordingly
         void setGIF()
         {
-            if(!filelist[currentImageIndex].Extension.Equals(".gif"))
+            if (!filelist[currentImageIndex].Extension.Equals(".gif"))
             {
                 isGIF = false;
                 timer1.Stop();
@@ -28,21 +28,28 @@ namespace ImageViewer1
                 gIFPropertyToolStripMenuItem.Enabled = false;
                 return;
             }
-            if(firstDraw)
+            if (firstDraw)
             {
                 currentFrame = 1;
                 fdimension = new FrameDimension(Image.FrameDimensionsList[0]);
                 gifFrameCount = Image.GetFrameCount(fdimension);
                 Image.SelectActiveFrame(fdimension, currentFrame);
-
-                PropertyItem item = Image.GetPropertyItem(0x5100);
-                interval = (item.Value[0] + item.Value[1] * 256);
+                isGIF = false;
+                PropertyItem[] t = Image.PropertyItems;
+                for (int i = 0; i < t.Length; i++)
+                {
+                    if (t[i].Id == 0x5100) // Timing data
+                    {
+                        interval = (t[i].Value[0] + t[i].Value[1] * 256);
+                        isGIF = true;
+                    }
+                }
+                if (!isGIF) return;  
+                // The file has a gif extension but no timing data so it will be displayed as a static image
             }
 
-            isGIF = true;
+            //isGIF = true;
             gIFPropertyToolStripMenuItem.Enabled = true;
-
-            //interval = 100 / fps;
 
             timer1.Interval = interval;
             timer1.Start();

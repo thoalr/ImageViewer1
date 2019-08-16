@@ -149,6 +149,8 @@ namespace ImageViewer1
             CenterImage();
             pictureBox1.Invalidate();
             if (isGIF) timer1.Start();
+
+            updateFormText();
         }
 
         // Horizontal Scroll START
