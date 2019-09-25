@@ -179,7 +179,7 @@ namespace ImageViewer1
             if (firstDraw)
             {
                 firstDraw = false;
-                Zoom = 100.0f * pictureBox1.Height / Image.Height;
+                Zoom = Image.Height > Image.Width ?  100.0f * pictureBox1.Height / Image.Height : 100.0f * pictureBox1.Width / Image.Width;
                 zoomToolStripMenuItem.Text = "Zoom: " + Math.Floor(Zoom) + "% (+/-)";
                 CenterImage();
                 updateFormText();
